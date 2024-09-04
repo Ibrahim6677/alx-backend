@@ -8,45 +8,57 @@ from base_caching import BaseCaching
 
 class LFUCache(BaseCaching):
     """
-    Most Recently Used (MRU) caching system implementation.
+    Least Frequently Used (LFU) caching system implementation.
     """
     def __init__(self):
         """
-        Initialize an LRUCache instance
+        Initialize an LFUCache instance
         """
         super().__init__()
         self.cache_order = []
+        self.frequency = {}
 
     def put(self, key, item):
         """
-        Get an item by using its key and return it. If the key is not in the
-        cache, add it. If the key is in the cache, remove it and add it again.
+        Add an item to the cache. If the cache exceeds the maximum
+        size, the least frequently used item will be discarded.
         Args:
-            key: The key of the item to get.
+            key: The key of the item to add.
             item: The item to add to the cache.
-        Returns:
-            The item if it is in the cache, None otherwise.
         """
-        if key and item:
+        if not key or not item:
+            return
+        
+        if key in self.cache_data:
             self.cache_data[key] = item
-            if key not in self.cache_order:
-                self.cache_order.append(key)
-            else:
-                self.cache_order.remove(key)
-                self.cache_order.append(key)
-            if len(self.cache_order) > BaseCaching.MAX_ITEMS:
-                popped = self.cache_order.pop(0)
-                del self.cache_data[popped]
-                print("DISCARD: {}".format(str(popped)))
+            self.frequency[key] += 1
+        else:
+            if len(self.cache_data) >= BaseCaching.MAX_ITEMS:
+                # Find the least frequently used key
+                min_freq = min(self.frequency.values())
+                lfu_keys = [k for k in self.cache_order if self.frequency[k] == min_freq]
+                lfu_key = lfu_keys[0]  # The oldest one among the least frequently used
+                self.cache_order.remove(lfu_key)
+                del self.cache_data[lfu_key]
+                del self.frequency[lfu_key]
+                print(f"DISCARD: {lfu_key}")
+            
+            # Add the new key
+            self.cache_data[key] = item
+            self.frequency[key] = 1
+            self.cache_order.append(key)
 
     def get(self, key):
         """
-        Get an item by using its key and return it. If the key is not
-        in the cache, return None.
+        Get an item by its key. Update its frequency.
         Args:
             key: The key of the item to get.
+        Returns:
+            The item if it is in the cache, None otherwise.
         """
         if key in self.cache_data:
+            self.frequency[key] += 1
+            # Maintain the order of keys based on frequency
             self.cache_order.remove(key)
             self.cache_order.append(key)
             return self.cache_data[key]
