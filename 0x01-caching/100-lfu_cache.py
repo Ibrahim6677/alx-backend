@@ -28,7 +28,6 @@ class LFUCache(BaseCaching):
         """
         if not key or not item:
             return
-        
         if key in self.cache_data:
             self.cache_data[key] = item
             self.frequency[key] += 1
@@ -36,13 +35,13 @@ class LFUCache(BaseCaching):
             if len(self.cache_data) >= BaseCaching.MAX_ITEMS:
                 # Find the least frequently used key
                 min_freq = min(self.frequency.values())
-                lfu_keys = [k for k in self.cache_order if self.frequency[k] == min_freq]
-                lfu_key = lfu_keys[0]  # The oldest one among the least frequently used
+                lfu_keys = [k for k in
+                            self.cache_order if self.frequency[k] == min_freq]
+                lfu_key = lfu_keys[0]
                 self.cache_order.remove(lfu_key)
                 del self.cache_data[lfu_key]
                 del self.frequency[lfu_key]
                 print(f"DISCARD: {lfu_key}")
-            
             # Add the new key
             self.cache_data[key] = item
             self.frequency[key] = 1
