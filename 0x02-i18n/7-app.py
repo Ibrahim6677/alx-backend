@@ -8,8 +8,10 @@ from pytz import timezone
 from typing import Union
 import pytz
 
+
 app = Flask(__name__)
 babel = Babel(app)
+
 
 users = {
     1: {"name": "Balou", "locale": "fr", "timezone": "Europe/Paris"},
